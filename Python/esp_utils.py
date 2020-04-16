@@ -40,6 +40,18 @@ def sigmoid(beta, h):
     s= 1/(1+ np.exp(-beta*h))
     return s
 
+def oneHotEncode(y):
+
+    num = len(y)
+    nlabels = len(np.unique(y))
+
+    one_hot_matrix = np.zeros((num, nlabels))
+
+    for i, c in enumerate(y):
+        one_hot_matrix[i][y[i] - 1] = 1
+
+    return one_hot_matrix
+
 #Parameter initialization
 def initialize_parameters(layers):
 
@@ -508,3 +520,16 @@ def predict(x, y, parameters, activation):
     print('accuracy=', accuracy)
 
     return model
+
+
+
+# Main function. 
+"""
+X -- data, iput marix
+Y -- true "label" vector
+layers -- list containing the input size and each layer size
+learning_rate -- learning rate of the gradient descent update rule
+num_iterations -- number of iterations of the optimization loop
+print_cost -- if True, it prints the cost every 100 steps
+    """
+
