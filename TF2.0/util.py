@@ -1,4 +1,4 @@
-#Math Libraries
+  #Math Libraries
 import numpy as np
 
 #Visualization libraries
@@ -105,6 +105,62 @@ def train(x, y, model, obj, method, num_iter, lr):
   
   return model
 
+#------------Hessian-------------------
+
+def flatten(tensor):
+
+    '''
+    Flattening function:
+
+    input: a tensor list
+    returns: a rank one tensor
+    '''
+
+    s= len(tensor) #number of tensors in the list
+
+    for i in range(s):
+
+        dl = tensor[i] #take one element of the gradient list (hence the zero)
+        d1, d2 = dl.get_shape() #Obtain tensor dimensions
+
+        fl = tf.reshape(dl,[-1, d1*d2]) #reshape the tensor to a (1, d1*d2) tensor
+
+        #concatenate over all the elemets in the list
+        if i==0: flattened = fl # the first time
+        else: flattened = tf.concat([flattened, fl], axis=1)
+
+    return flattened
+
+#Hessian
+def hessian(grads, par):
+
+    '''
+    Evaluates the exact Hessian matrix.
+    This function uses the same convention of the Autograd package.
+
+    Inputs:
+    grads --- the evaluated gradeints of the cost function
+
+    Returns:
+    hessian matrix: a (dim,dim) matrix of second derivatives, where 'dim' is the dimension of
+    the flattened gradient tensor.
+    '''
+
+    flat_grads = flatten(grads)[0] #flat gradients
+
+    dim = flat_grads.get_shape()[0] #get the dimensions of the flattened tensor
+
+    hess = [] #list
+    print("check51")
+    for i in range (dim):
+
+        dg_i = tf.gradients(flat_grads[i], par) #for each element of grads evaluate the gradients
+        dg_i_flat = flatten(dg_i) #flatten the resulting hessian onto a 1 d array
+        hess.append(dg_i_flat) #store row by row
+
+    print("check52")
+    return tf.reshape(hess,[dim, dim]) #returns the reshaped matrix
+
 # sample code
 
 # # model specification
@@ -115,5 +171,3 @@ def train(x, y, model, obj, method, num_iter, lr):
 
 # # evaluation
 # obj(model(xt), yt, 'crossEntropy'), eval_accuracy(model(xt), yt, 'logistic')
-
-
