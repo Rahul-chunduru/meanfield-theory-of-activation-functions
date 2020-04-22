@@ -146,11 +146,15 @@ def hessian(grads, par):
 
     return tf.reshape(hess,[dim, dim]) #returns the reshaped matrix
 
-def train(x, y, model, obj, method, num_iter, lr):
+def train(x, y, model, obj, method, num_iter, lr, tracV, sEpoch):
 
   opt = tf.keras.optimizers.SGD(lr)
+  
+  tracD = {}
+  for var in tracV:
+    tracD[var] = []
 
-  for epoch in range(num_iter):
+  for epoch in range(1, num_iter + 1):
     with tf.GradientTape() as g:
       cost = obj(model(x), y, method)
       print("epoch", epoch, cost)
@@ -158,18 +162,26 @@ def train(x, y, model, obj, method, num_iter, lr):
     grads = g.gradient(cost, model.trainable_variables)
 
     opt.apply_gradients(zip(grads, model.trainable_variables))
-  
-  return model
+
+    if epoch % sEpoch == 0:
+      for var in tracV:
+        tracD[var].append(model.trainable_variables[var].numpy())
+    
+  for var in tracV:
+    tracD[var] = np.stack(tracD[var])
+   
+  return model, tracD
 
 # sample code
+#plotting code
 
-# # model specification
-model = DNN([128, 28, 10], ['dense', 'esp', 'softmax'])
-
-# # train
-model = train(x_train, y_train, model, obj, 'crossEntropy', 100, 0.1)
-
-# # evaluation
-obj(model(x_train), y_train, 'crossEntropy'), eval_accuracy(model(x_train), y_train, 'logistic')
-
-# Can access all the parameters using - model.trainable_variables
+def plotNode(betaL, layerNum, nodeNum):
+  for var in [4]:
+    tracVar = betaL[layerNum]
+    x = np.linspace(100, 3000, 30)
+    y = tracVar[:, nodeNum]
+    # plt.title('')
+    plt.xlabel('iterations')
+    plt.ylabel('beta values')
+    plt.plot(x, y)
+    plt.show()
